@@ -6,7 +6,7 @@ import importPlugin from 'eslint-plugin-import';
 import { globalIgnores } from 'eslint/config';
 
 export default tseslint.config(
-  globalIgnores(['node_modules/', 'dist/', 'build/', '.next/', 'out/']),
+  globalIgnores(['node_modules/', 'dist/', 'build/', '.next/', 'out/', 'src/migrations/']),
   {
     ignores: ['eslint.config.mjs', 'postcss.config.mjs'],
   },
