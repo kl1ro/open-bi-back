@@ -8,6 +8,7 @@ import { validateEnvironment } from "./env.js";
 import { HealthModule } from "./health/health.module.js";
 import { createMikroOrmConfig } from "./mikro-orm.js";
 import { UsersModule } from "./users/users.module.js";
+import { AuthModule } from "./auth/auth.module.js";
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UsersModule } from "./users/users.module.js";
 
     HealthModule,
     UsersModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
