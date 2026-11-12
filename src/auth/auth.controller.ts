@@ -12,7 +12,7 @@ import {
 } from "@nestjs/common";
 import type { Request, Response } from "express";
 
-import { clearSessionCookie, destroySession, regenerateSession } from "../session.js";
+import { clearSessionCookie, destroySession, startNewSession } from "../session.js";
 import type User from "../users/user.js";
 import { convertUserToView, type UserView } from "../users/user.js";
 import { AuthErrorFilter } from "./auth-error.filter.js";
@@ -67,7 +67,7 @@ export class AuthController {
 }
 
 async function startUserSession(user: User, deps: StartUserSessionDeps) {
-  await regenerateSession(deps.request.session);
+  await startNewSession(deps.request.session);
   deps.request.session.userId = user.id;
 }
 
