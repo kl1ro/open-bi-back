@@ -1,4 +1,5 @@
 import { RedisStore } from "connect-redis";
+import type { Response } from "express";
 import session, { type Session, type SessionOptions } from "express-session";
 import { createClient } from "redis";
 
@@ -10,6 +11,7 @@ declare module "express-session" {
   }
 }
 
+const SESSION_COOKIE_NAME = "sid";
 const SESSION_LIFETIME = 30 * 24 * 60 * 60 * 1000;
 
 export async function createSessionMiddleware(deps: CreateSessionMiddlewareDeps) {
@@ -40,6 +42,7 @@ function createSessionOptions(
 ): SessionOptions {
   return {
     store,
+    name: SESSION_COOKIE_NAME,
     secret: deps.sessionSecret,
     resave: false,
     saveUninitialized: false,
@@ -90,4 +93,8 @@ export class DestroySessionError extends Error {
   public constructor(options: ErrorOptions) {
     super("Failed to destroy the session", options);
   }
+}
+
+export function clearSessionCookie(response: Response) {
+  response.clearCookie(SESSION_COOKIE_NAME);
 }
