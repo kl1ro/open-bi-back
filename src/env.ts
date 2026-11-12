@@ -1,9 +1,11 @@
 import { Expose, plainToInstance, Type } from "class-transformer";
 import {
   IsInt,
+  IsString,
   IsUrl,
   Max,
   Min,
+  MinLength,
   validateSync,
   type ValidationError,
 } from "class-validator";
@@ -19,6 +21,15 @@ export default class Environment {
   @Expose({ name: "DATABASE_URL" })
   @IsUrl({ protocols: ["postgres", "postgresql"], require_tld: false })
   public databaseUrl: string;
+
+  @Expose({ name: "REDIS_URL" })
+  @IsUrl({ protocols: ["redis"], require_tld: false })
+  public redisUrl: string;
+
+  @Expose({ name: "SESSION_SECRET" })
+  @IsString()
+  @MinLength(32)
+  public sessionSecret: string;
 }
 
 export function validateEnvironment(variables: Record<string, unknown>): Environment {
