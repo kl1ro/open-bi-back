@@ -14,6 +14,7 @@ import type { Request, Response } from "express";
 
 import { clearSessionCookie, destroySession, regenerateSession } from "../session.js";
 import type User from "../users/user.js";
+import { convertUserToView, type UserView } from "../users/user.js";
 import { AuthErrorFilter } from "./auth-error.filter.js";
 import { AuthService } from "./auth.service.js";
 import { CredentialsDto } from "./credentials.dto.js";
@@ -72,13 +73,4 @@ async function startUserSession(user: User, deps: StartUserSessionDeps) {
 
 interface StartUserSessionDeps {
   request: Request;
-}
-
-function convertUserToView(user: User): UserView {
-  return { id: user.id, email: user.email };
-}
-
-export interface UserView {
-  id: User["id"];
-  email: User["email"];
 }

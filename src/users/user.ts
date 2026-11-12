@@ -4,3 +4,12 @@ export default interface User {
   passwordHash: string;
   createdAt: Date;
 }
+
+export function convertUserToView(user: User): UserView {
+  return { id: user.id, email: user.email };
+}
+
+export interface UserView {
+  id: User["id"];
+  email: User["email"];
+}
