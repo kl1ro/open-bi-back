@@ -21,7 +21,7 @@ export class AuthService {
   }
 
   public async signIn(credentials: CredentialsDto): Promise<User> {
-    const user = await this.userRepository.loadUserByEmail(credentials.email);
+    const user = await this.userRepository.findUserByEmail(credentials.email);
     const isPasswordCorrect = await verifyUserPassword(user, credentials.password);
     if (!user || !isPasswordCorrect) throw new InvalidCredentialsError();
     return user;
@@ -29,7 +29,7 @@ export class AuthService {
 
   public async loadMe(session: Request["session"]): Promise<User> {
     const myId = getSessionUserId(session);
-    const user = await this.userRepository.loadUserById(myId);
+    const user = await this.userRepository.findUserById(myId);
     if (!user) throw new UserNotFoundError({ id: myId });
     return user;
   }

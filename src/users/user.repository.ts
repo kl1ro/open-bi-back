@@ -1,8 +1,8 @@
 import type User from "./user.js";
 
 export abstract class UserRepository {
-  public abstract loadUserByEmail(email: User["email"]): Promise<User | undefined>;
-  public abstract loadUserById(id: User["id"]): Promise<User | undefined>;
+  public abstract findUserByEmail(email: User["email"]): Promise<User | undefined>;
+  public abstract findUserById(id: User["id"]): Promise<User | undefined>;
   public abstract insertUser(user: User): Promise<void>;
 }
 

@@ -17,7 +17,7 @@ export class MikroOrmUserRepository extends UserRepository {
     super();
   }
 
-  public async loadUserByEmail(email: User["email"]): Promise<User | undefined> {
+  public async findUserByEmail(email: User["email"]): Promise<User | undefined> {
     try {
       const user = await this.entityManager.findOne(USER_SCHEMA, { email });
       return user ?? undefined;
@@ -26,7 +26,7 @@ export class MikroOrmUserRepository extends UserRepository {
     }
   }
 
-  public async loadUserById(id: User["id"]): Promise<User | undefined> {
+  public async findUserById(id: User["id"]): Promise<User | undefined> {
     try {
       const user = await this.entityManager.findOne(USER_SCHEMA, { id });
       return user ?? undefined;
