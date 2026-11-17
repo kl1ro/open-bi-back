@@ -2,10 +2,8 @@ import { randomUUID } from "node:crypto";
 
 import { Injectable } from "@nestjs/common";
 import * as argon2 from "argon2";
-import type { Request } from "express";
 import { v7 as uuidv7 } from "uuid";
 
-import { getSessionUserId } from "../session.js";
 import type User from "../users/user.js";
 import { UserRepository } from "../users/user.repository.js";
 import type { CredentialsDto } from "./credentials.dto.js";
@@ -25,11 +23,6 @@ export class AuthService {
     const isPasswordCorrect = await verifyUserPassword(user, credentials.password);
     if (!user || !isPasswordCorrect) throw new InvalidCredentialsError();
     return user;
-  }
-
-  public async loadMe(session: Request["session"]): Promise<User> {
-    const myId = getSessionUserId(session);
-    return this.userRepository.getUserById(myId);
   }
 }
 
