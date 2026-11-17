@@ -4,6 +4,12 @@ export abstract class UserRepository {
   public abstract findUserByEmail(email: User["email"]): Promise<User | undefined>;
   public abstract findUserById(id: User["id"]): Promise<User | undefined>;
   public abstract insertUser(user: User): Promise<void>;
+
+  public async getUserById(id: User["id"]): Promise<User> {
+    const user = await this.findUserById(id);
+    if (!user) throw new UserNotFoundError({ id });
+    return user;
+  }
 }
 
 export class EmailTakenError extends Error {

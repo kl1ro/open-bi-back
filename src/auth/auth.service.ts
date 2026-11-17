@@ -7,7 +7,7 @@ import { v7 as uuidv7 } from "uuid";
 
 import { getSessionUserId } from "../session.js";
 import type User from "../users/user.js";
-import { UserNotFoundError, UserRepository } from "../users/user.repository.js";
+import { UserRepository } from "../users/user.repository.js";
 import type { CredentialsDto } from "./credentials.dto.js";
 
 @Injectable()
@@ -29,9 +29,7 @@ export class AuthService {
 
   public async loadMe(session: Request["session"]): Promise<User> {
     const myId = getSessionUserId(session);
-    const user = await this.userRepository.findUserById(myId);
-    if (!user) throw new UserNotFoundError({ id: myId });
-    return user;
+    return this.userRepository.getUserById(myId);
   }
 }
 
