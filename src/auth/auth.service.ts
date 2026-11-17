@@ -7,7 +7,7 @@ import { v7 as uuidv7 } from "uuid";
 
 import { getSessionUserId } from "../session.js";
 import type User from "../users/user.js";
-import { UserRepository } from "../users/user.repository.js";
+import { UserNotFoundError, UserRepository } from "../users/user.repository.js";
 import type { CredentialsDto } from "./credentials.dto.js";
 
 @Injectable()
@@ -40,16 +40,6 @@ export class InvalidCredentialsError extends Error {
 
   public constructor(options?: ErrorOptions) {
     super("The email or the password is wrong", options);
-  }
-}
-
-export class UserNotFoundError extends Error {
-  public name = UserNotFoundError.name;
-  public id: User["id"];
-
-  public constructor(options: ErrorOptions & { id: User["id"] }) {
-    super(`User with id of ${options.id} doesn't exist`, options);
-    this.id = options.id;
   }
 }
 
