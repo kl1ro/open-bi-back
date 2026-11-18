@@ -1,20 +1,23 @@
-import {
-  Catch,
-  UnauthorizedException,
-  UseFilters,
-  type ArgumentsHost,
-} from "@nestjs/common";
+import { Catch, UnauthorizedException, type ArgumentsHost } from "@nestjs/common";
 import { BaseExceptionFilter } from "@nestjs/core";
 
+import {
+  convertDomainErrorToHttpException,
+  type DomainErrorToHttpExceptionMap,
+} from "../../lib/domain-errors-to-http-exceptions.js";
 import { InvalidCredentialsError } from "../auth.service.js";
 
-export function UseSignInFilter() {
-  return UseFilters(InvalidCredentialsFilter);
+const SIGN_IN_DOMAIN_TO_HTTP: DomainErrorToHttpExceptionMap = new Map([
+  [InvalidCredentialsError, InvalidCredentialsToUnauthorized],
+]);
+
+@Catch(...SIGN_IN_DOMAIN_TO_HTTP.keys())
+export class SignInFilter extends BaseExceptionFilter {
+  public catch(error: Error, host: ArgumentsHost) {
+    super.catch(convertDomainErrorToHttpException(error, SIGN_IN_DOMAIN_TO_HTTP), host);
+  }
 }
 
-@Catch(InvalidCredentialsError)
-export class InvalidCredentialsFilter extends BaseExceptionFilter {
-  public catch(error: unknown, host: ArgumentsHost) {
-    super.catch(new UnauthorizedException("Wrong email or password"), host);
-  }
+export function InvalidCredentialsToUnauthorized() {
+  return new UnauthorizedException("Wrong email or password");
 }

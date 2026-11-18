@@ -6,3 +6,13 @@ export default interface Organization {
   ownerId: User["id"];
   createdAt: Date;
 }
+
+export function convertOrganizationToView(organization: Organization): OrganizationView {
+  return { id: organization.id, name: organization.name, ownerId: organization.ownerId };
+}
+
+export interface OrganizationView {
+  id: Organization["id"];
+  name: Organization["name"];
+  ownerId: Organization["ownerId"];
+}
