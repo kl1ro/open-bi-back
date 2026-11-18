@@ -1,7 +1,10 @@
 import { Catch, NotFoundException, type ArgumentsHost } from "@nestjs/common";
 import { BaseExceptionFilter } from "@nestjs/core";
 
-import { resolveError, type ErrorResolvers } from "../../error-resolvers.js";
+import {
+  convertDomainErrorToHttpException,
+  type DomainErrorToHttpExceptionMap,
+} from "../../lib/domain-errors-to-http-exceptions.js";
 import { NotSignedInError } from "../../session.js";
 import { NotSignedInToUnauthorized } from "../../users/filters/me.filter.js";
 import { MembershipNotFoundError } from "../membership.repository.js";
@@ -16,7 +19,7 @@ import {
   OrganizationNotFoundToNotFound,
 } from "./update-organization.filter.js";
 
-const REMOVE_MEMBER_ERROR_RESOLVERS: ErrorResolvers = new Map([
+const DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP: DomainErrorToHttpExceptionMap = new Map([
   [NotSignedInError, NotSignedInToUnauthorized],
   [OrganizationNotFoundError, OrganizationNotFoundToNotFound],
   [NotOrganizationOwnerError, NotOrganizationOwnerToForbidden],
@@ -24,10 +27,13 @@ const REMOVE_MEMBER_ERROR_RESOLVERS: ErrorResolvers = new Map([
   [OwnerCannotLeaveError, OwnerCannotLeaveToConflict],
 ]);
 
-@Catch(...REMOVE_MEMBER_ERROR_RESOLVERS.keys())
+@Catch(...DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP.keys())
 export class RemoveMemberFilter extends BaseExceptionFilter {
   public catch(error: Error, host: ArgumentsHost) {
-    super.catch(resolveError(error, REMOVE_MEMBER_ERROR_RESOLVERS), host);
+    super.catch(
+      convertDomainErrorToHttpException(error, DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP),
+      host,
+    );
   }
 }
 
