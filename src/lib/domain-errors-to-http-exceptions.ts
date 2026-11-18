@@ -1,13 +1,18 @@
 import type { HttpException } from "@nestjs/common";
 
-export function resolveError(
+export function convertDomainErrorToHttpException(
   error: Error,
-  resolvers: ReadonlyMap<unknown, ErrorResolver>,
+  map: ReadonlyMap<unknown, DomainErrorToHttpException>,
 ) {
-  const resolver = resolvers.get(error.constructor);
-  return resolver?.(error) ?? error;
+  const domainErrorToHttpException = map.get(error.constructor);
+  return domainErrorToHttpException?.(error) ?? error;
 }
 
-export type ErrorResolver = (error: Error) => HttpException;
-export type ErrorResolvers = ReadonlyMap<ErrorClass, ErrorResolver>;
-export type ErrorClass = new (...args: never[]) => Error;
+export type DomainErrorToHttpException = (error: Error) => HttpException;
+
+export type DomainErrorToHttpExceptionMap = ReadonlyMap<
+  DomainErrorClass,
+  DomainErrorToHttpException
+>;
+
+export type DomainErrorClass = new (...args: never[]) => Error;
