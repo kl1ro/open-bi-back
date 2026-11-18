@@ -16,12 +16,15 @@ import {
 import type { Request } from "express";
 
 import { SignedInGuard } from "../auth/guards/signed-in.guard.js";
+import type User from "../users/user.js";
 import { CreateInvitationFilter } from "./filters/create-invitation.filter.js";
 import { CreateOrganizationFilter } from "./filters/create-organization.filter.js";
 import { DeleteOrganizationFilter } from "./filters/delete-organization.filter.js";
 import { JoinOrganizationFilter } from "./filters/join-organization.filter.js";
+import { LeaveOrganizationFilter } from "./filters/leave-organization.filter.js";
 import { MyOrganizationsFilter } from "./filters/my-organizations.filter.js";
 import { OrganizationMembersFilter } from "./filters/organization-members.filter.js";
+import { RemoveMemberFilter } from "./filters/remove-member.filter.js";
 import { UpdateOrganizationFilter } from "./filters/update-organization.filter.js";
 import { convertInvitationToView, type InvitationView } from "./invitation.js";
 import { InvitationLinkDto } from "./invitation-link.dto.js";
@@ -122,5 +125,28 @@ export class OrganizationsController {
     );
 
     return convertInvitationToView(invitation);
+  }
+
+  @Post(":id/leave")
+  @UseGuards(SignedInGuard)
+  @UseFilters(LeaveOrganizationFilter)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  public async leave(
+    @Param("id", ParseUUIDPipe) id: Organization["id"],
+    @Req() request: Request,
+  ) {
+    await this.organizationsService.leave(id, request.session);
+  }
+
+  @Delete(":id/members/:userId")
+  @UseGuards(SignedInGuard)
+  @UseFilters(RemoveMemberFilter)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  public async removeMember(
+    @Param("id", ParseUUIDPipe) id: Organization["id"],
+    @Param("userId", ParseUUIDPipe) userId: User["id"],
+    @Req() request: Request,
+  ) {
+    await this.organizationsService.removeMember(id, userId, request.session);
   }
 }

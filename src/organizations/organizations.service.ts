@@ -17,6 +17,7 @@ import type { InvitationLinkDto } from "./invitation-link.dto.js";
 import type { InvitationOptionsDto } from "./invitation-options.dto.js";
 import { InvitationRepository } from "./invitation.repository.js";
 import type Membership from "./membership.js";
+import { isMembershipInvitedBy } from "./membership.js";
 import { MembershipRepository } from "./membership.repository.js";
 import type Organization from "./organization.js";
 import { isOrganizationOwnedBy } from "./organization.js";
@@ -99,6 +100,29 @@ export class OrganizationsService {
     const membership = createInvitedMembership(invitation, deps);
     await this.insertInvitedMembership(membership, invitation);
     return this.organizationRepository.getOrganizationById(invitation.organizationId);
+  }
+
+  public async leave(id: Organization["id"], session: Request["session"]) {
+    const myId = getSessionUserId(session);
+    const organization = await this.organizationRepository.getOrganizationById(id);
+    const deps = { organization };
+    const membership = await this.membershipRepository.getMembership(id, myId);
+    ensureNotOwnerMembership(membership, deps);
+    await this.membershipRepository.deleteMembership(membership);
+  }
+
+  public async removeMember(
+    id: Organization["id"],
+    userId: User["id"],
+    session: Request["session"],
+  ) {
+    const myId = getSessionUserId(session);
+    const organization = await this.organizationRepository.getOrganizationById(id);
+    const deps = { organization };
+    const membership = await this.membershipRepository.getMembership(id, userId);
+    ensureMembershipRemovableBy(membership, myId, deps);
+    ensureNotOwnerMembership(membership, deps);
+    await this.membershipRepository.deleteMembership(membership);
   }
 
   private async ensureMember(organizationId: Organization["id"], userId: User["id"]) {
@@ -213,4 +237,75 @@ function createInvitedMembership(
 
 interface CreateInvitedMembershipDeps {
   userId: User["id"];
+}
+
+function ensureNotOwnerMembership(
+  membership: Membership,
+  deps: EnsureNotOwnerMembershipDeps,
+) {
+  if (isOrganizationOwnedBy(deps.organization, membership.userId))
+    throw new OwnerCannotLeaveError({ organizationId: deps.organization.id });
+}
+
+interface EnsureNotOwnerMembershipDeps {
+  organization: Organization;
+}
+
+export class OwnerCannotLeaveError extends Error {
+  public name = OwnerCannotLeaveError.name;
+  public organizationId: Organization["id"];
+
+  public constructor(options: ErrorOptions & { organizationId: Organization["id"] }) {
+    super(
+      `The owner can't leave the organization with id of ${options.organizationId}`,
+      options,
+    );
+
+    this.organizationId = options.organizationId;
+  }
+}
+
+function ensureMembershipRemovableBy(
+  membership: Membership,
+  userId: User["id"],
+  deps: EnsureMembershipRemovableByDeps,
+) {
+  const isAllowed =
+    isOrganizationOwnedBy(deps.organization, userId) ||
+    isMembershipInvitedBy(membership, userId);
+
+  if (!isAllowed)
+    throw new MemberRemovalForbiddenError({
+      organizationId: membership.organizationId,
+      userId: membership.userId,
+      removerId: userId,
+    });
+}
+
+interface EnsureMembershipRemovableByDeps {
+  organization: Organization;
+}
+
+export class MemberRemovalForbiddenError extends Error {
+  public name = MemberRemovalForbiddenError.name;
+  public organizationId: Organization["id"];
+  public userId: User["id"];
+  public removerId: User["id"];
+
+  public constructor(
+    options: ErrorOptions & {
+      organizationId: Organization["id"];
+      userId: User["id"];
+      removerId: User["id"];
+    },
+  ) {
+    super(
+      `User with id of ${options.removerId} may not remove the user with id of ${options.userId} from the organization with id of ${options.organizationId}`,
+      options,
+    );
+
+    this.organizationId = options.organizationId;
+    this.userId = options.userId;
+    this.removerId = options.removerId;
+  }
 }

@@ -20,6 +20,8 @@ export abstract class MembershipRepository {
     invitation: Invitation,
   ): Promise<void>;
 
+  public abstract deleteMembership(membership: Membership): Promise<void>;
+
   public async getMembership(
     organizationId: Organization["id"],
     userId: User["id"],
@@ -123,5 +125,23 @@ export class InvitationSpendFailedError extends Error {
   public constructor(options: ErrorOptions & { id: Invitation["id"] }) {
     super(`Failed to mark the invitation with id of ${options.id} as used`, options);
     this.id = options.id;
+  }
+}
+
+export class MembershipDeleteFailedError extends Error {
+  public name = MembershipDeleteFailedError.name;
+  public organizationId: Organization["id"];
+  public userId: User["id"];
+
+  public constructor(
+    options: ErrorOptions & { organizationId: Organization["id"]; userId: User["id"] },
+  ) {
+    super(
+      `Failed to delete the membership of the user with id of ${options.userId} in the organization with id of ${options.organizationId}`,
+      options,
+    );
+
+    this.organizationId = options.organizationId;
+    this.userId = options.userId;
   }
 }
