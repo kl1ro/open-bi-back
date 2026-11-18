@@ -9,16 +9,16 @@ import { NotSignedInError } from "../../session.js";
 import { NotSignedInToUnauthorized } from "../../users/filters/me.filter.js";
 import { MembershipNotFoundError } from "../membership.repository.js";
 
-const DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP: DomainErrorToHttpExceptionMap = new Map([
+const ORGANIZATION_MEMBERS_DOMAIN_TO_HTTP: DomainErrorToHttpExceptionMap = new Map([
   [NotSignedInError, NotSignedInToUnauthorized],
   [MembershipNotFoundError, MembershipNotFoundToForbidden],
 ]);
 
-@Catch(...DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP.keys())
+@Catch(...ORGANIZATION_MEMBERS_DOMAIN_TO_HTTP.keys())
 export class OrganizationMembersFilter extends BaseExceptionFilter {
   public catch(error: Error, host: ArgumentsHost) {
     super.catch(
-      convertDomainErrorToHttpException(error, DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP),
+      convertDomainErrorToHttpException(error, ORGANIZATION_MEMBERS_DOMAIN_TO_HTTP),
       host,
     );
   }
