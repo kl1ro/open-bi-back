@@ -8,15 +8,15 @@ import {
 import { NotSignedInError } from "../../session.js";
 import { NotSignedInToUnauthorized } from "../../users/filters/me.filter.js";
 
-const DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP: DomainErrorToHttpExceptionMap = new Map([
+const CREATE_ORGANIZATION_DOMAIN_TO_HTTP: DomainErrorToHttpExceptionMap = new Map([
   [NotSignedInError, NotSignedInToUnauthorized],
 ]);
 
-@Catch(...DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP.keys())
+@Catch(...CREATE_ORGANIZATION_DOMAIN_TO_HTTP.keys())
 export class CreateOrganizationFilter extends BaseExceptionFilter {
   public catch(error: Error, host: ArgumentsHost) {
     super.catch(
-      convertDomainErrorToHttpException(error, DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP),
+      convertDomainErrorToHttpException(error, CREATE_ORGANIZATION_DOMAIN_TO_HTTP),
       host,
     );
   }

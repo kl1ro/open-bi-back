@@ -8,18 +8,15 @@ import {
 import { NotSignedInError } from "../../session.js";
 import { UserNotFoundError } from "../user.repository.js";
 
-const DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP: DomainErrorToHttpExceptionMap = new Map([
+const ME_DOMAIN_TO_HTTP: DomainErrorToHttpExceptionMap = new Map([
   [NotSignedInError, NotSignedInToUnauthorized],
   [UserNotFoundError, UserNotFoundToUnauthorized],
 ]);
 
-@Catch(...DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP.keys())
+@Catch(...ME_DOMAIN_TO_HTTP.keys())
 export class MeFilter extends BaseExceptionFilter {
   public catch(error: Error, host: ArgumentsHost) {
-    super.catch(
-      convertDomainErrorToHttpException(error, DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP),
-      host,
-    );
+    super.catch(convertDomainErrorToHttpException(error, ME_DOMAIN_TO_HTTP), host);
   }
 }
 

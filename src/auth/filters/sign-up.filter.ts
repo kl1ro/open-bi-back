@@ -7,17 +7,14 @@ import {
 } from "../../lib/domain-errors-to-http-exceptions.js";
 import { EmailTakenError } from "../../users/user.repository.js";
 
-const DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP: DomainErrorToHttpExceptionMap = new Map([
+const SIGN_UP_DOMAIN_TO_HTTP: DomainErrorToHttpExceptionMap = new Map([
   [EmailTakenError, EmailTakenToConflict],
 ]);
 
-@Catch(...DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP.keys())
+@Catch(...SIGN_UP_DOMAIN_TO_HTTP.keys())
 export class SignUpFilter extends BaseExceptionFilter {
   public catch(error: Error, host: ArgumentsHost) {
-    super.catch(
-      convertDomainErrorToHttpException(error, DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP),
-      host,
-    );
+    super.catch(convertDomainErrorToHttpException(error, SIGN_UP_DOMAIN_TO_HTTP), host);
   }
 }
 

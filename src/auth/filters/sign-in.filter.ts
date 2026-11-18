@@ -7,17 +7,14 @@ import {
 } from "../../lib/domain-errors-to-http-exceptions.js";
 import { InvalidCredentialsError } from "../auth.service.js";
 
-const DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP: DomainErrorToHttpExceptionMap = new Map([
+const SIGN_IN_DOMAIN_TO_HTTP: DomainErrorToHttpExceptionMap = new Map([
   [InvalidCredentialsError, InvalidCredentialsToUnauthorized],
 ]);
 
-@Catch(...DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP.keys())
+@Catch(...SIGN_IN_DOMAIN_TO_HTTP.keys())
 export class SignInFilter extends BaseExceptionFilter {
   public catch(error: Error, host: ArgumentsHost) {
-    super.catch(
-      convertDomainErrorToHttpException(error, DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP),
-      host,
-    );
+    super.catch(convertDomainErrorToHttpException(error, SIGN_IN_DOMAIN_TO_HTTP), host);
   }
 }
 
