@@ -13,6 +13,7 @@ import { OrganizationsModule } from "./organizations/organizations.module.js";
 
 @Module({
   imports: [
+    HealthModule,
     ConfigModule.forRoot({ validate: validateEnvironment }),
 
     MikroOrmModule.forRootAsync({
@@ -22,9 +23,8 @@ import { OrganizationsModule } from "./organizations/organizations.module.js";
       driver: PostgreSqlDriver,
     }),
 
-    HealthModule,
-    UsersModule,
     AuthModule,
+    UsersModule,
     OrganizationsModule,
   ],
 })
