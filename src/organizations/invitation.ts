@@ -11,3 +11,23 @@ export default interface Invitation {
   usedBy: User["id"] | null;
   usedAt: Date | null;
 }
+
+const DEFAULT_INVITATION_LIFETIME = 24 * 60 * 60 * 1000;
+
+export function getDefaultInvitationExpiry(): Date {
+  return new Date(Date.now() + DEFAULT_INVITATION_LIFETIME);
+}
+
+export function convertInvitationToView(invitation: Invitation): InvitationView {
+  return {
+    id: invitation.id,
+    singleUse: invitation.singleUse,
+    expiresAt: invitation.expiresAt,
+  };
+}
+
+export interface InvitationView {
+  id: Invitation["id"];
+  singleUse: Invitation["singleUse"];
+  expiresAt: Invitation["expiresAt"];
+}
