@@ -6,14 +6,17 @@ import {
 } from "@nestjs/common";
 import { BaseExceptionFilter } from "@nestjs/core";
 
-import { resolveError, type ErrorResolvers } from "../../error-resolvers.js";
+import {
+  convertDomainErrorToHttpException,
+  type DomainErrorToHttpExceptionMap,
+} from "../../lib/domain-errors-to-http-exceptions.js";
 import { NotSignedInError } from "../../session.js";
 import { NotSignedInToUnauthorized } from "../../users/filters/me.filter.js";
 import { InvitationExpiredError, InvitationUsedUpError } from "../invitation.js";
 import { InvitationNotFoundError } from "../invitation.repository.js";
 import { MembershipExistsError } from "../membership.repository.js";
 
-const JOIN_ORGANIZATION_ERROR_RESOLVERS: ErrorResolvers = new Map([
+const DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP: DomainErrorToHttpExceptionMap = new Map([
   [NotSignedInError, NotSignedInToUnauthorized],
   [InvitationNotFoundError, InvitationNotFoundToNotFound],
   [InvitationExpiredError, InvitationExpiredToNotFound],
@@ -21,10 +24,13 @@ const JOIN_ORGANIZATION_ERROR_RESOLVERS: ErrorResolvers = new Map([
   [MembershipExistsError, MembershipExistsToConflict],
 ]);
 
-@Catch(...JOIN_ORGANIZATION_ERROR_RESOLVERS.keys())
+@Catch(...DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP.keys())
 export class JoinOrganizationFilter extends BaseExceptionFilter {
   public catch(error: Error, host: ArgumentsHost) {
-    super.catch(resolveError(error, JOIN_ORGANIZATION_ERROR_RESOLVERS), host);
+    super.catch(
+      convertDomainErrorToHttpException(error, DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP),
+      host,
+    );
   }
 }
 
