@@ -13,18 +13,18 @@ import { OwnerCannotLeaveError } from "../organizations.service.js";
 import { MembershipNotFoundToForbidden } from "./organization-members.filter.js";
 import { OrganizationNotFoundToNotFound } from "./update-organization.filter.js";
 
-const DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP: DomainErrorToHttpExceptionMap = new Map([
+const LEAVE_ORGANIZATION_DOMAIN_TO_HTTP: DomainErrorToHttpExceptionMap = new Map([
   [NotSignedInError, NotSignedInToUnauthorized],
   [OrganizationNotFoundError, OrganizationNotFoundToNotFound],
   [MembershipNotFoundError, MembershipNotFoundToForbidden],
   [OwnerCannotLeaveError, OwnerCannotLeaveToConflict],
 ]);
 
-@Catch(...DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP.keys())
+@Catch(...LEAVE_ORGANIZATION_DOMAIN_TO_HTTP.keys())
 export class LeaveOrganizationFilter extends BaseExceptionFilter {
   public catch(error: Error, host: ArgumentsHost) {
     super.catch(
-      convertDomainErrorToHttpException(error, DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP),
+      convertDomainErrorToHttpException(error, LEAVE_ORGANIZATION_DOMAIN_TO_HTTP),
       host,
     );
   }

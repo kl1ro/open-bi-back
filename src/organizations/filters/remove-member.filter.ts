@@ -19,7 +19,7 @@ import {
   OrganizationNotFoundToNotFound,
 } from "./update-organization.filter.js";
 
-const DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP: DomainErrorToHttpExceptionMap = new Map([
+const REMOVE_MEMBER_DOMAIN_TO_HTTP: DomainErrorToHttpExceptionMap = new Map([
   [NotSignedInError, NotSignedInToUnauthorized],
   [OrganizationNotFoundError, OrganizationNotFoundToNotFound],
   [NotOrganizationOwnerError, NotOrganizationOwnerToForbidden],
@@ -27,11 +27,11 @@ const DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP: DomainErrorToHttpExceptionMap = new Ma
   [OwnerCannotLeaveError, OwnerCannotLeaveToConflict],
 ]);
 
-@Catch(...DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP.keys())
+@Catch(...REMOVE_MEMBER_DOMAIN_TO_HTTP.keys())
 export class RemoveMemberFilter extends BaseExceptionFilter {
   public catch(error: Error, host: ArgumentsHost) {
     super.catch(
-      convertDomainErrorToHttpException(error, DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP),
+      convertDomainErrorToHttpException(error, REMOVE_MEMBER_DOMAIN_TO_HTTP),
       host,
     );
   }
