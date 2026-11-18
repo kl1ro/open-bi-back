@@ -18,6 +18,6 @@ export const ORGANIZATION_SCHEMA = new EntitySchema<Organization>({
       joinColumn: "owner_id",
     },
 
-    createdAt: { type: "datetime" },
+    createdAt: { type: "datetime", defaultRaw: "now()" },
   },
 });

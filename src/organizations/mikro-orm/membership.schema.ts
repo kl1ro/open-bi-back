@@ -34,6 +34,6 @@ export const MEMBERSHIP_SCHEMA = new EntitySchema<Membership>({
       joinColumn: "invited_by",
     },
 
-    joinedAt: { type: "datetime" },
+    joinedAt: { type: "datetime", defaultRaw: "now()" },
   },
 });

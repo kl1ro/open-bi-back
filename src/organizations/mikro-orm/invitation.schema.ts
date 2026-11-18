@@ -26,7 +26,7 @@ export const INVITATION_SCHEMA = new EntitySchema<Invitation>({
       joinColumn: "created_by",
     },
 
-    createdAt: { type: "datetime" },
+    createdAt: { type: "datetime", defaultRaw: "now()" },
     singleUse: { type: "boolean" },
     expiresAt: { type: "datetime", nullable: true },
 
