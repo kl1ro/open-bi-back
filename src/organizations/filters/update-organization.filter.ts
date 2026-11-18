@@ -15,17 +15,17 @@ import { NotSignedInToUnauthorized } from "../../users/filters/me.filter.js";
 import { OrganizationNotFoundError } from "../organization.repository.js";
 import { NotOrganizationOwnerError } from "../organizations.service.js";
 
-const DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP: DomainErrorToHttpExceptionMap = new Map([
+const UPDATE_ORGANIZATION_DOMAIN_TO_HTTP: DomainErrorToHttpExceptionMap = new Map([
   [NotSignedInError, NotSignedInToUnauthorized],
   [OrganizationNotFoundError, OrganizationNotFoundToNotFound],
   [NotOrganizationOwnerError, NotOrganizationOwnerToForbidden],
 ]);
 
-@Catch(...DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP.keys())
+@Catch(...UPDATE_ORGANIZATION_DOMAIN_TO_HTTP.keys())
 export class UpdateOrganizationFilter extends BaseExceptionFilter {
   public catch(error: Error, host: ArgumentsHost) {
     super.catch(
-      convertDomainErrorToHttpException(error, DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP),
+      convertDomainErrorToHttpException(error, UPDATE_ORGANIZATION_DOMAIN_TO_HTTP),
       host,
     );
   }

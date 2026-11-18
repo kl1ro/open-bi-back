@@ -14,17 +14,17 @@ import {
   OrganizationNotFoundToNotFound,
 } from "./update-organization.filter.js";
 
-const DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP: DomainErrorToHttpExceptionMap = new Map([
+const DELETE_ORGANIZATION_DOMAIN_TO_HTTP: DomainErrorToHttpExceptionMap = new Map([
   [NotSignedInError, NotSignedInToUnauthorized],
   [OrganizationNotFoundError, OrganizationNotFoundToNotFound],
   [NotOrganizationOwnerError, NotOrganizationOwnerToForbidden],
 ]);
 
-@Catch(...DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP.keys())
+@Catch(...DELETE_ORGANIZATION_DOMAIN_TO_HTTP.keys())
 export class DeleteOrganizationFilter extends BaseExceptionFilter {
   public catch(error: Error, host: ArgumentsHost) {
     super.catch(
-      convertDomainErrorToHttpException(error, DOMAIN_ERROR_TO_HTTP_EXCEPTION_MAP),
+      convertDomainErrorToHttpException(error, DELETE_ORGANIZATION_DOMAIN_TO_HTTP),
       host,
     );
   }
