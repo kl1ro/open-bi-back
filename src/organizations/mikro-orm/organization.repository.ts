@@ -5,9 +5,12 @@ import type User from "../../users/user.js";
 import type Membership from "../membership.js";
 import type Organization from "../organization.js";
 import {
+  OrganizationDeleteFailedError,
   OrganizationInsertFailedError,
+  OrganizationLoadByIdFailedError,
   OrganizationRepository,
   OrganizationsLoadByMemberFailedError,
+  OrganizationUpdateFailedError,
 } from "../organization.repository.js";
 import { MEMBERSHIP_SCHEMA } from "./membership.schema.js";
 import { ORGANIZATION_SCHEMA } from "./organization.schema.js";
@@ -42,6 +45,34 @@ export class MikroOrmOrganizationRepository extends OrganizationRepository {
       return await this.entityManager.find(ORGANIZATION_SCHEMA, { id: { $in: ids } });
     } catch (error) {
       throw new OrganizationsLoadByMemberFailedError({ memberId, cause: error });
+    }
+  }
+
+  public async findOrganizationById(
+    id: Organization["id"],
+  ): Promise<Organization | undefined> {
+    try {
+      const organization = await this.entityManager.findOne(ORGANIZATION_SCHEMA, { id });
+      return organization ?? undefined;
+    } catch (error) {
+      throw new OrganizationLoadByIdFailedError({ id, cause: error });
+    }
+  }
+
+  public async updateOrganization(organization: Organization) {
+    try {
+      const filter = { id: organization.id };
+      await this.entityManager.nativeUpdate(ORGANIZATION_SCHEMA, filter, organization);
+    } catch (error) {
+      throw new OrganizationUpdateFailedError({ id: organization.id, cause: error });
+    }
+  }
+
+  public async deleteOrganization(organization: Organization) {
+    try {
+      await this.entityManager.nativeDelete(ORGANIZATION_SCHEMA, { id: organization.id });
+    } catch (error) {
+      throw new OrganizationDeleteFailedError({ id: organization.id, cause: error });
     }
   }
 }

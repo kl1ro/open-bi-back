@@ -11,6 +11,19 @@ export abstract class OrganizationRepository {
   public abstract findOrganizationsByMember(
     memberId: User["id"],
   ): Promise<Organization[]>;
+
+  public abstract findOrganizationById(
+    id: Organization["id"],
+  ): Promise<Organization | undefined>;
+
+  public abstract updateOrganization(organization: Organization): Promise<void>;
+  public abstract deleteOrganization(organization: Organization): Promise<void>;
+
+  public async getOrganizationById(id: Organization["id"]): Promise<Organization> {
+    const organization = await this.findOrganizationById(id);
+    if (!organization) throw new OrganizationNotFoundError({ id });
+    return organization;
+  }
 }
 
 export class OrganizationInsertFailedError extends Error {
@@ -34,5 +47,45 @@ export class OrganizationsLoadByMemberFailedError extends Error {
     );
 
     this.memberId = options.memberId;
+  }
+}
+
+export class OrganizationLoadByIdFailedError extends Error {
+  public name = OrganizationLoadByIdFailedError.name;
+  public id: Organization["id"];
+
+  public constructor(options: ErrorOptions & { id: Organization["id"] }) {
+    super(`Failed to load the organization with id of ${options.id}`, options);
+    this.id = options.id;
+  }
+}
+
+export class OrganizationNotFoundError extends Error {
+  public name = OrganizationNotFoundError.name;
+  public id: Organization["id"];
+
+  public constructor(options: ErrorOptions & { id: Organization["id"] }) {
+    super(`Organization with id of ${options.id} doesn't exist`, options);
+    this.id = options.id;
+  }
+}
+
+export class OrganizationUpdateFailedError extends Error {
+  public name = OrganizationUpdateFailedError.name;
+  public id: Organization["id"];
+
+  public constructor(options: ErrorOptions & { id: Organization["id"] }) {
+    super(`Failed to update the organization with id of ${options.id}`, options);
+    this.id = options.id;
+  }
+}
+
+export class OrganizationDeleteFailedError extends Error {
+  public name = OrganizationDeleteFailedError.name;
+  public id: Organization["id"];
+
+  public constructor(options: ErrorOptions & { id: Organization["id"] }) {
+    super(`Failed to delete the organization with id of ${options.id}`, options);
+    this.id = options.id;
   }
 }

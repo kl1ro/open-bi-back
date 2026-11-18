@@ -7,6 +7,10 @@ export default interface Organization {
   createdAt: Date;
 }
 
+export function isOrganizationOwnedBy(organization: Organization, userId: User["id"]) {
+  return organization.ownerId === userId;
+}
+
 export function convertOrganizationToView(organization: Organization): OrganizationView {
   return { id: organization.id, name: organization.name, ownerId: organization.ownerId };
 }
