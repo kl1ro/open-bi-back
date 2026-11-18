@@ -17,7 +17,6 @@ import type { InvitationLinkDto } from "./invitation-link.dto.js";
 import type { InvitationOptionsDto } from "./invitation-options.dto.js";
 import { InvitationRepository } from "./invitation.repository.js";
 import type Membership from "./membership.js";
-import { isMembershipInvitedBy } from "./membership.js";
 import { MembershipRepository } from "./membership.repository.js";
 import type Organization from "./organization.js";
 import { isOrganizationOwnedBy } from "./organization.js";
@@ -119,8 +118,8 @@ export class OrganizationsService {
     const myId = getSessionUserId(session);
     const organization = await this.organizationRepository.getOrganizationById(id);
     const deps = { organization };
+    ensureOrganizationOwnedBy(organization, myId);
     const membership = await this.membershipRepository.getMembership(id, userId);
-    ensureMembershipRemovableBy(membership, myId, deps);
     ensureNotOwnerMembership(membership, deps);
     await this.membershipRepository.deleteMembership(membership);
   }
@@ -262,50 +261,5 @@ export class OwnerCannotLeaveError extends Error {
     );
 
     this.organizationId = options.organizationId;
-  }
-}
-
-function ensureMembershipRemovableBy(
-  membership: Membership,
-  userId: User["id"],
-  deps: EnsureMembershipRemovableByDeps,
-) {
-  const isAllowed =
-    isOrganizationOwnedBy(deps.organization, userId) ||
-    isMembershipInvitedBy(membership, userId);
-
-  if (!isAllowed)
-    throw new MemberRemovalForbiddenError({
-      organizationId: membership.organizationId,
-      userId: membership.userId,
-      removerId: userId,
-    });
-}
-
-interface EnsureMembershipRemovableByDeps {
-  organization: Organization;
-}
-
-export class MemberRemovalForbiddenError extends Error {
-  public name = MemberRemovalForbiddenError.name;
-  public organizationId: Organization["id"];
-  public userId: User["id"];
-  public removerId: User["id"];
-
-  public constructor(
-    options: ErrorOptions & {
-      organizationId: Organization["id"];
-      userId: User["id"];
-      removerId: User["id"];
-    },
-  ) {
-    super(
-      `User with id of ${options.removerId} may not remove the user with id of ${options.userId} from the organization with id of ${options.organizationId}`,
-      options,
-    );
-
-    this.organizationId = options.organizationId;
-    this.userId = options.userId;
-    this.removerId = options.removerId;
   }
 }

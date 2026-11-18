@@ -1,9 +1,4 @@
-import {
-  Catch,
-  ForbiddenException,
-  NotFoundException,
-  type ArgumentsHost,
-} from "@nestjs/common";
+import { Catch, NotFoundException, type ArgumentsHost } from "@nestjs/common";
 import { BaseExceptionFilter } from "@nestjs/core";
 
 import { resolveError, type ErrorResolvers } from "../../error-resolvers.js";
@@ -12,17 +7,20 @@ import { NotSignedInToUnauthorized } from "../../users/filters/me.filter.js";
 import { MembershipNotFoundError } from "../membership.repository.js";
 import { OrganizationNotFoundError } from "../organization.repository.js";
 import {
-  MemberRemovalForbiddenError,
+  NotOrganizationOwnerError,
   OwnerCannotLeaveError,
 } from "../organizations.service.js";
 import { OwnerCannotLeaveToConflict } from "./leave-organization.filter.js";
-import { OrganizationNotFoundToNotFound } from "./update-organization.filter.js";
+import {
+  NotOrganizationOwnerToForbidden,
+  OrganizationNotFoundToNotFound,
+} from "./update-organization.filter.js";
 
 const REMOVE_MEMBER_ERROR_RESOLVERS: ErrorResolvers = new Map([
   [NotSignedInError, NotSignedInToUnauthorized],
   [OrganizationNotFoundError, OrganizationNotFoundToNotFound],
+  [NotOrganizationOwnerError, NotOrganizationOwnerToForbidden],
   [MembershipNotFoundError, MembershipNotFoundToNotFound],
-  [MemberRemovalForbiddenError, MemberRemovalForbiddenToForbidden],
   [OwnerCannotLeaveError, OwnerCannotLeaveToConflict],
 ]);
 
@@ -35,8 +33,4 @@ export class RemoveMemberFilter extends BaseExceptionFilter {
 
 export function MembershipNotFoundToNotFound() {
   return new NotFoundException("Member not found");
-}
-
-export function MemberRemovalForbiddenToForbidden() {
-  return new ForbiddenException("Only the owner or the inviter can remove this member");
 }

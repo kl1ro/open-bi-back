@@ -8,10 +8,6 @@ export default interface Membership {
   joinedAt: Date;
 }
 
-export function isMembershipInvitedBy(membership: Membership, userId: User["id"]) {
-  return membership.invitedBy === userId;
-}
-
 export function convertMembershipToView(membership: Membership): MembershipView {
   return {
     userId: membership.userId,
