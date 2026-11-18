@@ -19,7 +19,9 @@ import { SignedInGuard } from "../auth/guards/signed-in.guard.js";
 import { CreateOrganizationFilter } from "./filters/create-organization.filter.js";
 import { DeleteOrganizationFilter } from "./filters/delete-organization.filter.js";
 import { MyOrganizationsFilter } from "./filters/my-organizations.filter.js";
+import { OrganizationMembersFilter } from "./filters/organization-members.filter.js";
 import { UpdateOrganizationFilter } from "./filters/update-organization.filter.js";
+import { convertMembershipToView, type MembershipView } from "./membership.js";
 import type Organization from "./organization.js";
 import { convertOrganizationToView, type OrganizationView } from "./organization.js";
 import { OrganizationDetailsDto } from "./organization-details.dto.js";
@@ -75,5 +77,17 @@ export class OrganizationsController {
     @Req() request: Request,
   ) {
     await this.organizationsService.delete(id, request.session);
+  }
+
+  @Get(":id/members")
+  @UseGuards(SignedInGuard)
+  @UseFilters(OrganizationMembersFilter)
+  public async getMembers(
+    @Param("id", ParseUUIDPipe) id: Organization["id"],
+    @Req() request: Request,
+  ): Promise<MembershipView[]> {
+    const memberships = await this.organizationsService.getMembers(id, request.session);
+    const membershipViews = memberships.map(convertMembershipToView);
+    return membershipViews;
   }
 }
