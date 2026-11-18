@@ -7,6 +7,7 @@ import { InvitationUsedUpError } from "../invitation.js";
 import type Membership from "../membership.js";
 import {
   InvitationSpendFailedError,
+  MembershipDeleteFailedError,
   MembershipExistsError,
   MembershipInsertFailedError,
   MembershipLoadFailedError,
@@ -65,6 +66,16 @@ export class MikroOrmMembershipRepository extends MembershipRepository {
       await this.spendInvitation(invitation, membership);
       await this.insertMembership(membership);
     });
+  }
+
+  public async deleteMembership(membership: Membership) {
+    const ids = { organizationId: membership.organizationId, userId: membership.userId };
+
+    try {
+      await this.entityManager.nativeDelete(MEMBERSHIP_SCHEMA, ids);
+    } catch (error) {
+      throw new MembershipDeleteFailedError({ ...ids, cause: error });
+    }
   }
 
   private async spendInvitation(invitation: Invitation, membership: Membership) {
