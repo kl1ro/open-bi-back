@@ -1,21 +1,26 @@
-import {
-  Catch,
-  UnauthorizedException,
-  UseFilters,
-  type ArgumentsHost,
-} from "@nestjs/common";
+import { Catch, UnauthorizedException, type ArgumentsHost } from "@nestjs/common";
 import { BaseExceptionFilter } from "@nestjs/core";
 
+import { resolveError, type ErrorResolvers } from "../../error-resolvers.js";
 import { NotSignedInError } from "../../session.js";
 import { UserNotFoundError } from "../user.repository.js";
 
-export function UseMeFilter() {
-  return UseFilters(NotSignedInFilter);
+const ME_ERROR_RESOLVERS: ErrorResolvers = new Map([
+  [NotSignedInError, NotSignedInToUnauthorized],
+  [UserNotFoundError, UserNotFoundToUnauthorized],
+]);
+
+@Catch(...ME_ERROR_RESOLVERS.keys())
+export class MeFilter extends BaseExceptionFilter {
+  public catch(error: Error, host: ArgumentsHost) {
+    super.catch(resolveError(error, ME_ERROR_RESOLVERS), host);
+  }
 }
 
-@Catch(NotSignedInError, UserNotFoundError)
-export class NotSignedInFilter extends BaseExceptionFilter {
-  public catch(error: unknown, host: ArgumentsHost) {
-    super.catch(new UnauthorizedException("Not signed in"), host);
-  }
+export function NotSignedInToUnauthorized() {
+  return new UnauthorizedException("Not signed in");
+}
+
+export function UserNotFoundToUnauthorized() {
+  return new UnauthorizedException("Not signed in");
 }

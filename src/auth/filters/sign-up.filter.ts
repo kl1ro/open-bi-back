@@ -1,15 +1,20 @@
-import { Catch, ConflictException, UseFilters, type ArgumentsHost } from "@nestjs/common";
+import { Catch, ConflictException, type ArgumentsHost } from "@nestjs/common";
 import { BaseExceptionFilter } from "@nestjs/core";
 
+import { resolveError, type ErrorResolvers } from "../../error-resolvers.js";
 import { EmailTakenError } from "../../users/user.repository.js";
 
-export function UseSignUpFilter() {
-  return UseFilters(EmailTakenFilter);
+const SIGN_UP_ERROR_RESOLVERS: ErrorResolvers = new Map([
+  [EmailTakenError, EmailTakenToConflict],
+]);
+
+@Catch(...SIGN_UP_ERROR_RESOLVERS.keys())
+export class SignUpFilter extends BaseExceptionFilter {
+  public catch(error: Error, host: ArgumentsHost) {
+    super.catch(resolveError(error, SIGN_UP_ERROR_RESOLVERS), host);
+  }
 }
 
-@Catch(EmailTakenError)
-export class EmailTakenFilter extends BaseExceptionFilter {
-  public catch(error: unknown, host: ArgumentsHost) {
-    super.catch(new ConflictException("This email is already taken"), host);
-  }
+export function EmailTakenToConflict() {
+  return new ConflictException("This email is already taken");
 }

@@ -1,7 +1,17 @@
-import { UseFilters } from "@nestjs/common";
+import { Catch, type ArgumentsHost } from "@nestjs/common";
+import { BaseExceptionFilter } from "@nestjs/core";
 
-import { NotSignedInFilter } from "../../auth/filters/not-signed-in.filter.js";
+import { resolveError, type ErrorResolvers } from "../../error-resolvers.js";
+import { NotSignedInError } from "../../session.js";
+import { NotSignedInToUnauthorized } from "../../users/filters/me.filter.js";
 
-export function UseMyOrganizationsFilter() {
-  return UseFilters(NotSignedInFilter);
+const MY_ORGANIZATIONS_ERROR_RESOLVERS: ErrorResolvers = new Map([
+  [NotSignedInError, NotSignedInToUnauthorized],
+]);
+
+@Catch(...MY_ORGANIZATIONS_ERROR_RESOLVERS.keys())
+export class MyOrganizationsFilter extends BaseExceptionFilter {
+  public catch(error: Error, host: ArgumentsHost) {
+    super.catch(resolveError(error, MY_ORGANIZATIONS_ERROR_RESOLVERS), host);
+  }
 }
