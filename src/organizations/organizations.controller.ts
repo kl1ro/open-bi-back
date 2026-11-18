@@ -16,11 +16,14 @@ import {
 import type { Request } from "express";
 
 import { SignedInGuard } from "../auth/guards/signed-in.guard.js";
+import { CreateInvitationFilter } from "./filters/create-invitation.filter.js";
 import { CreateOrganizationFilter } from "./filters/create-organization.filter.js";
 import { DeleteOrganizationFilter } from "./filters/delete-organization.filter.js";
 import { MyOrganizationsFilter } from "./filters/my-organizations.filter.js";
 import { OrganizationMembersFilter } from "./filters/organization-members.filter.js";
 import { UpdateOrganizationFilter } from "./filters/update-organization.filter.js";
+import { convertInvitationToView, type InvitationView } from "./invitation.js";
+import { InvitationOptionsDto } from "./invitation-options.dto.js";
 import { convertMembershipToView, type MembershipView } from "./membership.js";
 import type Organization from "./organization.js";
 import { convertOrganizationToView, type OrganizationView } from "./organization.js";
@@ -89,5 +92,22 @@ export class OrganizationsController {
     const memberships = await this.organizationsService.getMembers(id, request.session);
     const membershipViews = memberships.map(convertMembershipToView);
     return membershipViews;
+  }
+
+  @Post(":id/invitations")
+  @UseGuards(SignedInGuard)
+  @UseFilters(CreateInvitationFilter)
+  public async createInvitation(
+    @Param("id", ParseUUIDPipe) id: Organization["id"],
+    @Body() options: InvitationOptionsDto,
+    @Req() request: Request,
+  ): Promise<InvitationView> {
+    const invitation = await this.organizationsService.createInvitation(
+      id,
+      options,
+      request.session,
+    );
+
+    return convertInvitationToView(invitation);
   }
 }

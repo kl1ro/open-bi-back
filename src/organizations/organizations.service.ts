@@ -1,9 +1,14 @@
+import { randomUUID } from "node:crypto";
+
 import { Injectable } from "@nestjs/common";
 import type { Request } from "express";
 import { v7 as uuidv7 } from "uuid";
 
 import { getSessionUserId } from "../session.js";
 import type User from "../users/user.js";
+import type Invitation from "./invitation.js";
+import type { InvitationOptionsDto } from "./invitation-options.dto.js";
+import { InvitationRepository } from "./invitation.repository.js";
 import type Membership from "./membership.js";
 import { MembershipRepository } from "./membership.repository.js";
 import type Organization from "./organization.js";
@@ -16,6 +21,7 @@ export class OrganizationsService {
   public constructor(
     private readonly organizationRepository: OrganizationRepository,
     private readonly membershipRepository: MembershipRepository,
+    private readonly invitationRepository: InvitationRepository,
   ) {}
 
   public async create(
@@ -61,6 +67,19 @@ export class OrganizationsService {
     const myId = getSessionUserId(session);
     await this.ensureMember(id, myId);
     return this.membershipRepository.findMembershipsByOrganization(id);
+  }
+
+  public async createInvitation(
+    id: Organization["id"],
+    options: InvitationOptionsDto,
+    session: Request["session"],
+  ): Promise<Invitation> {
+    const myId = getSessionUserId(session);
+    await this.ensureMember(id, myId);
+    const deps = { organizationId: id, createdBy: myId };
+    const invitation = createInvitation(options, deps);
+    await this.invitationRepository.insertInvitation(invitation);
+    return invitation;
   }
 
   private async ensureMember(organizationId: Organization["id"], userId: User["id"]) {
@@ -121,4 +140,25 @@ function getOrganizationWithDetails(
   details: OrganizationDetailsDto,
 ): Organization {
   return { ...organization, name: details.name };
+}
+
+function createInvitation(
+  options: InvitationOptionsDto,
+  deps: CreateInvitationDeps,
+): Invitation {
+  return {
+    id: randomUUID(),
+    organizationId: deps.organizationId,
+    createdBy: deps.createdBy,
+    createdAt: new Date(),
+    singleUse: options.singleUse,
+    expiresAt: options.expiresAt,
+    usedBy: null,
+    usedAt: null,
+  };
+}
+
+interface CreateInvitationDeps {
+  organizationId: Organization["id"];
+  createdBy: User["id"];
 }
