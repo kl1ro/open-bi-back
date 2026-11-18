@@ -9,9 +9,11 @@ import { validateEnvironment } from "./env.js";
 import { HealthModule } from "./health/health.module.js";
 import { createMikroOrmConfig } from "./mikro-orm.js";
 import { UsersModule } from "./users/users.module.js";
+import { OrganizationsModule } from "./organizations/organizations.module.js";
 
 @Module({
   imports: [
+    HealthModule,
     ConfigModule.forRoot({ validate: validateEnvironment }),
 
     MikroOrmModule.forRootAsync({
@@ -21,9 +23,9 @@ import { UsersModule } from "./users/users.module.js";
       driver: PostgreSqlDriver,
     }),
 
-    HealthModule,
-    UsersModule,
     AuthModule,
+    UsersModule,
+    OrganizationsModule,
   ],
 })
 export class AppModule {}
