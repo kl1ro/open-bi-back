@@ -1,14 +1,20 @@
-import { EntityManager } from "@mikro-orm/postgresql";
+import { EntityManager, UniqueConstraintViolationException } from "@mikro-orm/postgresql";
 import { Injectable } from "@nestjs/common";
 
 import type User from "../../users/user.js";
+import type Invitation from "../invitation.js";
+import { InvitationUsedUpError } from "../invitation.js";
 import type Membership from "../membership.js";
 import {
+  InvitationSpendFailedError,
+  MembershipExistsError,
+  MembershipInsertFailedError,
   MembershipLoadFailedError,
   MembershipRepository,
   MembershipsLoadByOrganizationFailedError,
 } from "../membership.repository.js";
 import type Organization from "../organization.js";
+import { INVITATION_SCHEMA } from "./invitation.schema.js";
 import { MEMBERSHIP_SCHEMA } from "./membership.schema.js";
 
 @Injectable()
@@ -42,4 +48,49 @@ export class MikroOrmMembershipRepository extends MembershipRepository {
       });
     }
   }
+
+  public async insertMembership(membership: Membership) {
+    try {
+      await this.entityManager.insert(MEMBERSHIP_SCHEMA, membership);
+    } catch (error) {
+      throw interpretInsertMembershipError(error, membership);
+    }
+  }
+
+  public async insertMembershipSpendingInvitation(
+    membership: Membership,
+    invitation: Invitation,
+  ) {
+    await this.entityManager.transactional(async () => {
+      await this.spendInvitation(invitation, membership);
+      await this.insertMembership(membership);
+    });
+  }
+
+  private async spendInvitation(invitation: Invitation, membership: Membership) {
+    const spentCount = await this.markInvitationUsed(invitation, membership);
+    if (!spentCount) throw new InvitationUsedUpError({ id: invitation.id });
+  }
+
+  private async markInvitationUsed(
+    invitation: Invitation,
+    membership: Membership,
+  ): Promise<number> {
+    try {
+      const filter = { id: invitation.id, usedBy: null };
+      const changes = { usedBy: membership.userId, usedAt: membership.joinedAt };
+      return await this.entityManager.nativeUpdate(INVITATION_SCHEMA, filter, changes);
+    } catch (error) {
+      throw new InvitationSpendFailedError({ id: invitation.id, cause: error });
+    }
+  }
+}
+
+function interpretInsertMembershipError(error: unknown, membership: Membership): Error {
+  const ids = { organizationId: membership.organizationId, userId: membership.userId };
+
+  if (error instanceof UniqueConstraintViolationException)
+    return new MembershipExistsError({ ...ids, cause: error });
+
+  return new MembershipInsertFailedError({ ...ids, cause: error });
 }

@@ -18,6 +18,39 @@ export function getDefaultInvitationExpiry(): Date {
   return new Date(Date.now() + DEFAULT_INVITATION_LIFETIME);
 }
 
+export function isInvitationExpired(invitation: Invitation) {
+  if (!invitation.expiresAt) return false;
+  return invitation.expiresAt <= new Date();
+}
+
+export class InvitationExpiredError extends Error {
+  public name = InvitationExpiredError.name;
+  public id: Invitation["id"];
+
+  public constructor(options: ErrorOptions & { id: Invitation["id"] }) {
+    super(`Invitation with id of ${options.id} has expired`, options);
+    this.id = options.id;
+  }
+}
+
+export function isInvitationUsedUp(invitation: Invitation) {
+  return invitation.singleUse && Boolean(invitation.usedBy);
+}
+
+export class InvitationUsedUpError extends Error {
+  public name = InvitationUsedUpError.name;
+  public id: Invitation["id"];
+
+  public constructor(options: ErrorOptions & { id: Invitation["id"] }) {
+    super(
+      `Single-use invitation with id of ${options.id} has already been used`,
+      options,
+    );
+
+    this.id = options.id;
+  }
+}
+
 export function convertInvitationToView(invitation: Invitation): InvitationView {
   return {
     id: invitation.id,
