@@ -5,6 +5,7 @@ import { v7 as uuidv7 } from "uuid";
 import { getSessionUserId } from "../session.js";
 import type User from "../users/user.js";
 import type Membership from "./membership.js";
+import { MembershipRepository } from "./membership.repository.js";
 import type Organization from "./organization.js";
 import { isOrganizationOwnedBy } from "./organization.js";
 import type { OrganizationDetailsDto } from "./organization-details.dto.js";
@@ -12,7 +13,10 @@ import { OrganizationRepository } from "./organization.repository.js";
 
 @Injectable()
 export class OrganizationsService {
-  public constructor(private readonly organizationRepository: OrganizationRepository) {}
+  public constructor(
+    private readonly organizationRepository: OrganizationRepository,
+    private readonly membershipRepository: MembershipRepository,
+  ) {}
 
   public async create(
     details: OrganizationDetailsDto,
@@ -48,6 +52,19 @@ export class OrganizationsService {
     const organization = await this.organizationRepository.getOrganizationById(id);
     ensureOrganizationOwnedBy(organization, myId);
     await this.organizationRepository.deleteOrganization(organization);
+  }
+
+  public async getMembers(
+    id: Organization["id"],
+    session: Request["session"],
+  ): Promise<Membership[]> {
+    const myId = getSessionUserId(session);
+    await this.ensureMember(id, myId);
+    return this.membershipRepository.findMembershipsByOrganization(id);
+  }
+
+  private async ensureMember(organizationId: Organization["id"], userId: User["id"]) {
+    await this.membershipRepository.getMembership(organizationId, userId);
   }
 }
 
