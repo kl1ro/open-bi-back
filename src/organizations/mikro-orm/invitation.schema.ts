@@ -13,7 +13,7 @@ export const INVITATION_SCHEMA = new EntitySchema<Invitation>({
 
     organizationId: {
       kind: "m:1",
-      entity: () => ORGANIZATION_SCHEMA,
+      type: ORGANIZATION_SCHEMA.meta.className,
       mapToPk: true,
       joinColumn: "organization_id",
       deleteRule: "cascade",
@@ -21,7 +21,7 @@ export const INVITATION_SCHEMA = new EntitySchema<Invitation>({
 
     createdBy: {
       kind: "m:1",
-      entity: () => USER_SCHEMA,
+      type: USER_SCHEMA.meta.className,
       mapToPk: true,
       joinColumn: "created_by",
     },
@@ -32,7 +32,7 @@ export const INVITATION_SCHEMA = new EntitySchema<Invitation>({
 
     usedBy: {
       kind: "m:1",
-      entity: () => USER_SCHEMA,
+      type: USER_SCHEMA.meta.className,
       mapToPk: true,
       nullable: true,
       joinColumn: "used_by",

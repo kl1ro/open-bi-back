@@ -11,7 +11,7 @@ export const MEMBERSHIP_SCHEMA = new EntitySchema<Membership>({
   properties: {
     organizationId: {
       kind: "m:1",
-      entity: () => ORGANIZATION_SCHEMA,
+      type: ORGANIZATION_SCHEMA.meta.className,
       mapToPk: true,
       primary: true,
       joinColumn: "organization_id",
@@ -20,7 +20,7 @@ export const MEMBERSHIP_SCHEMA = new EntitySchema<Membership>({
 
     userId: {
       kind: "m:1",
-      entity: () => USER_SCHEMA,
+      type: USER_SCHEMA.meta.className,
       mapToPk: true,
       primary: true,
       joinColumn: "user_id",
@@ -28,7 +28,7 @@ export const MEMBERSHIP_SCHEMA = new EntitySchema<Membership>({
 
     invitedBy: {
       kind: "m:1",
-      entity: () => USER_SCHEMA,
+      type: USER_SCHEMA.meta.className,
       mapToPk: true,
       nullable: true,
       joinColumn: "invited_by",

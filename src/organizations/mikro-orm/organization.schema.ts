@@ -13,7 +13,7 @@ export const ORGANIZATION_SCHEMA = new EntitySchema<Organization>({
 
     ownerId: {
       kind: "m:1",
-      entity: () => USER_SCHEMA,
+      type: USER_SCHEMA.meta.className,
       mapToPk: true,
       joinColumn: "owner_id",
     },
