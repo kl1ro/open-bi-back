@@ -1,7 +1,10 @@
 import { Catch, UnauthorizedException, type ArgumentsHost } from "@nestjs/common";
 import { BaseExceptionFilter } from "@nestjs/core";
 
-import { resolveError, type ErrorResolvers } from "../../error-resolvers.js";
+import {
+  resolveError,
+  type ErrorResolvers,
+} from "../../lib/domain-errors-to-http-exceptions.js";
 import { NotSignedInError } from "../../session.js";
 import { UserNotFoundError } from "../user.repository.js";
 

@@ -1,7 +1,10 @@
 import { Catch, UnauthorizedException, type ArgumentsHost } from "@nestjs/common";
 import { BaseExceptionFilter } from "@nestjs/core";
 
-import { resolveError, type ErrorResolvers } from "../../error-resolvers.js";
+import {
+  resolveError,
+  type ErrorResolvers,
+} from "../../lib/domain-errors-to-http-exceptions.js";
 import { InvalidCredentialsError } from "../auth.service.js";
 
 const SIGN_IN_ERROR_RESOLVERS: ErrorResolvers = new Map([
