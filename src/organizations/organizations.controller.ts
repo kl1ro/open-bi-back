@@ -19,10 +19,12 @@ import { SignedInGuard } from "../auth/guards/signed-in.guard.js";
 import { CreateInvitationFilter } from "./filters/create-invitation.filter.js";
 import { CreateOrganizationFilter } from "./filters/create-organization.filter.js";
 import { DeleteOrganizationFilter } from "./filters/delete-organization.filter.js";
+import { JoinOrganizationFilter } from "./filters/join-organization.filter.js";
 import { MyOrganizationsFilter } from "./filters/my-organizations.filter.js";
 import { OrganizationMembersFilter } from "./filters/organization-members.filter.js";
 import { UpdateOrganizationFilter } from "./filters/update-organization.filter.js";
 import { convertInvitationToView, type InvitationView } from "./invitation.js";
+import { InvitationLinkDto } from "./invitation-link.dto.js";
 import { InvitationOptionsDto } from "./invitation-options.dto.js";
 import { convertMembershipToView, type MembershipView } from "./membership.js";
 import type Organization from "./organization.js";
@@ -42,6 +44,17 @@ export class OrganizationsController {
     @Req() request: Request,
   ): Promise<OrganizationView> {
     const organization = await this.organizationsService.create(details, request.session);
+    return convertOrganizationToView(organization);
+  }
+
+  @Post("join")
+  @UseGuards(SignedInGuard)
+  @UseFilters(JoinOrganizationFilter)
+  public async join(
+    @Body() link: InvitationLinkDto,
+    @Req() request: Request,
+  ): Promise<OrganizationView> {
+    const organization = await this.organizationsService.join(link, request.session);
     return convertOrganizationToView(organization);
   }
 

@@ -7,6 +7,13 @@ import { v7 as uuidv7 } from "uuid";
 import { getSessionUserId } from "../session.js";
 import type User from "../users/user.js";
 import type Invitation from "./invitation.js";
+import {
+  InvitationExpiredError,
+  InvitationUsedUpError,
+  isInvitationExpired,
+  isInvitationUsedUp,
+} from "./invitation.js";
+import type { InvitationLinkDto } from "./invitation-link.dto.js";
 import type { InvitationOptionsDto } from "./invitation-options.dto.js";
 import { InvitationRepository } from "./invitation.repository.js";
 import type Membership from "./membership.js";
@@ -82,8 +89,29 @@ export class OrganizationsService {
     return invitation;
   }
 
+  public async join(
+    link: InvitationLinkDto,
+    session: Request["session"],
+  ): Promise<Organization> {
+    const deps = { userId: getSessionUserId(session) };
+    const invitation = await this.invitationRepository.getInvitationById(link.invitation);
+    ensureInvitationUsable(invitation);
+    const membership = createInvitedMembership(invitation, deps);
+    await this.insertInvitedMembership(membership, invitation);
+    return this.organizationRepository.getOrganizationById(invitation.organizationId);
+  }
+
   private async ensureMember(organizationId: Organization["id"], userId: User["id"]) {
     await this.membershipRepository.getMembership(organizationId, userId);
+  }
+
+  private async insertInvitedMembership(membership: Membership, invitation: Invitation) {
+    if (invitation.singleUse)
+      await this.membershipRepository.insertMembershipSpendingInvitation(
+        membership,
+        invitation,
+      );
+    else await this.membershipRepository.insertMembership(membership);
   }
 }
 
@@ -161,4 +189,28 @@ function createInvitation(
 interface CreateInvitationDeps {
   organizationId: Organization["id"];
   createdBy: User["id"];
+}
+
+function ensureInvitationUsable(invitation: Invitation) {
+  if (isInvitationExpired(invitation))
+    throw new InvitationExpiredError({ id: invitation.id });
+
+  if (isInvitationUsedUp(invitation))
+    throw new InvitationUsedUpError({ id: invitation.id });
+}
+
+function createInvitedMembership(
+  invitation: Invitation,
+  deps: CreateInvitedMembershipDeps,
+): Membership {
+  return {
+    organizationId: invitation.organizationId,
+    userId: deps.userId,
+    invitedBy: invitation.createdBy,
+    joinedAt: new Date(),
+  };
+}
+
+interface CreateInvitedMembershipDeps {
+  userId: User["id"];
 }
